@@ -1,5 +1,6 @@
 Flask
 Flask-Session
+cs50
 
 
 Use it in debuggin mod
