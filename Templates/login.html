@@ -1,22 +1,18 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Register
+    Login
 {% endblock %}
 
 
 
 {% block main %}
-
-<form action="/register" method="post">
+<form action="/login" method="post">
     <div class="mb-3">
         <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text">
     </div>
     <div class="mb-3">
         <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
-    </div>
-    <div class="mb-3">
-        <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Password (again)" type="password">
     </div>
     <div class="error-message">
         {% block error %}
@@ -24,7 +20,22 @@
         {% endblock %}
      </div>
    
-    <button class="btn btn-outline-dark" type="submit">Create your <span class="yellow">My</span><span class="green">Library</span> account</button>
+    <button class="btn btn-outline-dark" type="submit">Log in</button>
+    <br>
+    <br> 
+    
+    
+    <p class="small text-muted">New to MyLibrary?</p>
+    <button class="btn btn-outline-dark" type="button" onclick="redirectToRegister()">Create your <span class="yellow">My</span><span class="green">Library</span> account</button>
+    
 </form>
+
+<script>
+
+    function redirectToRegister() {
+        window.location.href = '/register';
+    }
+</script>
+
 
 {% endblock %}
