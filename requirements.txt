@@ -1,0 +1,11 @@
+Flask
+Flask-Session
+
+
+Use it in debuggin mod
+https://flask.palletsprojects.com/en/2.3.x/debugging/
+flask --app app run --debug
+
+
+
+https://favicon.io/
