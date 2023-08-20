@@ -6,11 +6,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 app = Flask(__name__)
 
 
-
 # Create a URL route in our application for "/"
 @app.route('/', methods=['GET', 'POST'])
 def hello_world():
     if request.method == "GET":
-        return render_template('layout.html')
+        return render_template('index.html')
     
 
