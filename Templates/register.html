@@ -17,6 +17,12 @@
     <div class="mb-3">
         <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Password (again)" type="password">
     </div>
-    <button class="btn btn-primary" type="submit">Register</button>
+    <div class="error-message">
+        {% block error %}
+        {{ message }}
+        {% endblock %}
+     </div>
+   
+    <button class="btn btn-outline-dark" type="submit">Create your <span class="yellow">My</span><span class="green">Library</span> account</button>
 </form>
 {% endblock %}

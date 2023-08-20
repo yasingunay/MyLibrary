@@ -3,10 +3,15 @@ Flask-Session
 cs50
 
 
+
 Use it in debuggin mod
 https://flask.palletsprojects.com/en/2.3.x/debugging/
 flask --app app run --debug
 
 
 
+Sources
+
 https://favicon.io/
+
+https://getbootstrap.com/docs/4.0/components/buttons/

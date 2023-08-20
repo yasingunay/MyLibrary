@@ -21,3 +21,22 @@ nav .navbar-brand .green
 {
     color: #2e944b;
 }
+
+
+.yellow
+{
+    color: #f5b82e;
+}
+
+.green
+{
+    color: #2e944b;
+}
+
+
+.error-message {
+    /*background-color: #ff9999;*/
+    color: #cc0000;
+    padding: 10px;
+   /*border: 1px solid #cc0000;*/
+}
