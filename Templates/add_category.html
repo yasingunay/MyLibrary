@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Add
+    Add New Category
 {% endblock %}
 
 {% block main %}
-    <form action="/add" method="post">
+    <form action="/add_category" method="post">
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="category_name" name="category_name" placeholder="New category" type="text">
         </div>

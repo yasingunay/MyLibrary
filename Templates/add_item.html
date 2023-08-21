@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add New Item
+{% endblock %}
+
+{% block main %}
+<form action="/add_item" method="post">
+    <div class="mb-3">
+        <select class="form-select mx-auto w-auto" name="category_name" required>
+            <option value="" disabled selected>Choose a Category</option>
+            {% for category in categories %}
+            <option value="{{ category.category_name }}">My{{ category.category_name | capitalize }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <input autocomplete="off" class="form-control mx-auto w-auto"  name="item_name" placeholder="Item" type="text" required>
+    </div>
+    <div class="mb-3">
+        <textarea class="form-control mx-auto w-auto" name="item_note" placeholder="Note" rows="10"></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit">Add</button>
+</form>
+{% endblock %}

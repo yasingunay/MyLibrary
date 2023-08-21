@@ -29,9 +29,11 @@ def after_request(response):
 
 # Create a URL route in our application for "/"
 @app.route('/', methods=['GET'])
+@login_required
 def index():
-    if request.method == "GET":
-        return render_template('index.html')
+    user_id = session.get("user_id")
+    rows = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ?", user_id)
+    return render_template('index.html', rows = rows)
     
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -124,20 +126,41 @@ def logout():
     return redirect("/")
 
 
-@app.route("/add", methods=["GET", "POST"])
+@app.route("/add_category", methods=["GET", "POST"])
 @login_required
-def add():
+def add_category():
     if request.method == "GET":
-        return render_template("add.html")
+        return render_template("add_category.html")
     else:
         category_name = request.form.get("category_name")
         if category_name == "":
-            return send_message("Enter a category name!", "add.html")
+            return send_message("Enter a category name!", "add_category.html")
         else:
             user_id = session.get("user_id")
             rows = db.execute("SELECT category_name FROM categories WHERE LOWER(category_name) = ? AND user_id = ?", category_name.lower(), user_id)
             if not rows:
-                db.execute("INSERT INTO categories(user_id, category_name) VALUES (?, ?)",user_id, category_name)
-                return send_message("Category successfully added!", "add.html")     
+                db.execute("INSERT INTO categories(user_id, category_name) VALUES (?, ?)",user_id, category_name.capitalize())
+                flash("Category successfully added!")     
+                return redirect("/")
             else:
-                return send_message("Category already exists!", "add.html")
+                return send_message("Category already exists!", "add_category.html")
+            
+
+
+
+@app.route("/add_item", methods=["GET", "POST"])
+@login_required
+def add_item():
+    user_id = session.get("user_id")
+    if request.method == "GET":
+        categories = db.execute("SELECT category_name FROM categories WHERE user_id = ? ", user_id)
+        return render_template("add_item.html", categories = categories)
+    else:
+        item_name = request.form.get("item_name")
+        item_note = request.form.get("item_note")
+        category_name = request.form.get("category_name")
+        rows = db.execute("SELECT category_id FROM categories WHERE category_name = ? ", category_name)
+        category_id = rows[0]["category_id"]
+        db.execute("INSERT INTO items(item_name, item_note, category_id, user_id) VALUES (?, ?, ?, ?)", item_name, item_note, category_id, user_id)
+        flash("Item successfully added!")
+        return redirect(url_for("index")) 
