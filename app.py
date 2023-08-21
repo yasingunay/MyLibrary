@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import register_error, login_error
+from helpers import register_error, login_error, login_required, send_message
 
 # Create the application instance
 app = Flask(__name__)
@@ -18,9 +18,18 @@ Session(app)
 db = SQL("sqlite:///mylibrary.db")
 
 
+@app.after_request
+def after_request(response):
+    """Ensure responses aren't cached"""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
 # Create a URL route in our application for "/"
 @app.route('/', methods=['GET'])
-def hello_world():
+def index():
     if request.method == "GET":
         return render_template('index.html')
     
@@ -52,9 +61,20 @@ def register():
         )
 
         # Add user to database
-        db.execute("INSERT INTO users(username, hash) VALUES(?,?)", username, password_hash)
+        result = db.execute("INSERT INTO users(username, hash) VALUES(?,?)", username, password_hash)
+    
+        if result:
+            # Log the user in
+            user_data = db.execute("SELECT user_id FROM users WHERE username = ?", username)
+            if user_data:
+                user_id = user_data[0]["user_id"]
+                session["user_id"] = user_id
 
-        return redirect("/")
+                # Redirect to the index page
+                return redirect("/")
+
+        else:
+            register_error("Registration failed!")
     
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -79,7 +99,7 @@ def login():
         rows = db.execute("SELECT * FROM users WHERE username is ?", username)
         if len(rows) == 1:
             password_hash = rows[0]["hash"]
-            user_id = rows[0]["id"]
+            user_id = rows[0]["user_id"]
 
         elif len(rows) != 1 or not check_password_hash(password_hash,password):
             return login_error("Invalid username and/or password")
@@ -102,3 +122,22 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
+
+
+@app.route("/add", methods=["GET", "POST"])
+@login_required
+def add():
+    if request.method == "GET":
+        return render_template("add.html")
+    else:
+        category_name = request.form.get("category_name")
+        if category_name == "":
+            return send_message("Enter a category name!", "add.html")
+        else:
+            user_id = session.get("user_id")
+            rows = db.execute("SELECT category_name FROM categories WHERE LOWER(category_name) = ? AND user_id = ?", category_name.lower(), user_id)
+            if not rows:
+                db.execute("INSERT INTO categories(user_id, category_name) VALUES (?, ?)",user_id, category_name)
+                return send_message("Category successfully added!", "add.html")     
+            else:
+                return send_message("Category already exists!", "add.html")
