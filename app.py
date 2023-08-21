@@ -164,3 +164,26 @@ def add_item():
         db.execute("INSERT INTO items(item_name, item_note, category_id, user_id) VALUES (?, ?, ?, ?)", item_name, item_note, category_id, user_id)
         flash("Item successfully added!")
         return redirect(url_for("index")) 
+    
+
+@app.route("/delete_item", methods=["GET", "POST"])
+@login_required
+def delete_item():
+    if request.method == "POST":
+        user_id = session.get("user_id")
+        rows = db.execute("SELECT item_id, item_name, item_note FROM items WHERE user_id = ?", user_id)
+        item_id = request.form.get("item_id")
+        db.execute("DELETE FROM items WHERE user_id = ? AND item_id = ?", user_id, item_id)
+        flash("Item deleted!")
+        return redirect("/")
+    else:
+        user_id = session.get("user_id")
+        rows = db.execute("SELECT item_id, item_name, item_note FROM items WHERE user_id = ?", user_id)
+        if not rows:
+            flash("No items!")
+            return redirect("/")
+        return render_template("delete_item.html" ,rows = rows)
+
+    
+
+
