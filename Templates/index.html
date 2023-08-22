@@ -5,6 +5,19 @@
 {% endblock %}
 
 {% block main %}
+<form action="/" method="post">
+    <div class="mb-3">
+        <select class="form-select mx-auto w-auto" name="category_name" required>
+            <option value="" disabled selected>Choose a Category</option>
+            {% for category in categories %}
+            <option value="{{ category.category_name }}">My{{ category.category_name | capitalize }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button class="btn btn-primary" type="submit">Look for items</button>
+</form>
+<br>
+{% if request.method == 'POST' %}
 <table class="table table-striped">
     <thead>
         <tr>
@@ -13,14 +26,18 @@
         </tr>
     </thead>
    <tbody>
-            {% for row in rows %}
+            {% for item in items %}
             <tr>
-                <td class="text-start">{{ row.item_name }}</td>
-                <td class="text-start">{{ row.item_note }}</td>
+                <td class="text-start">{{ item.item_name }}</td>
+                <td class="text-start">{{ item.item_note }}</td>
             </tr>
             {% endfor %}
     </tbody>
 </table>
+{% endif %}
 
 
 {% endblock %}
+
+
+

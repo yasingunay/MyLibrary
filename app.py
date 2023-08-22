@@ -28,15 +28,25 @@ def after_request(response):
 
 
 # Create a URL route in our application for "/"
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
     user_id = session.get("user_id")
-    rows = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ?", user_id)
-    if not rows:
-            flash("No items!")
-    return render_template('index.html', rows = rows)
-    
+    if request.method == "POST":
+        category_name = request.form.get("category_name")
+        rows = db.execute("SELECT category_id FROM categories WHERE category_name = ?", category_name)
+        category_id = rows[0]["category_id"]
+        items = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ? AND category_id = ?", user_id, category_id )
+        categories = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
+        if not items:
+                flash("Your category is empty!")
+        return render_template('index.html', items = items, categories = categories)
+    else:
+        items = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ?", user_id )
+        categories = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
+        if not items:
+                flash("No items!")
+        return render_template('index.html', items = items, categories = categories)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -195,7 +205,7 @@ def categories():
     if request.method == "GET":
         rows = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
         if not rows:
-            flash("No category!")
+            flash("You have no categories!")
         return render_template("categories.html", rows = rows)
     
 
@@ -210,16 +220,27 @@ def delete_category():
         return render_template("delete_category.html", rows = rows)
     else:
         category_id= request.form.get("category_id")
-        print(category_id)
         # rows = db.execute("SELECT category_id FROM categories WHERE category_name = ?", category_name)
         # category_id = rows[0]["category_id"]
         # Check if the category has associated items
         items_in_category = db.execute("SELECT COUNT(*) FROM items WHERE user_id = ? AND category_id = ?", user_id, category_id)
         num_items = items_in_category[0]["COUNT(*)"]
-        print(num_items)
         if num_items > 0:
             flash("Cannot delete the category. It contains items.")
         else:
             db.execute("DELETE FROM categories WHERE user_id = ? AND category_id = ?", user_id, category_id)
             flash("Category deleted!")
-            return redirect("/delete_category")
+        return redirect("/delete_category")
+        
+
+
+
+# @app.route('/books', methods=['GET', 'POST'])
+# @login_required
+# def Books():
+#     user_id = session.get("user_id")
+#     category_id = request.form.get("category_id")
+#     items = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ?", user_id)
+#     rows = db.execute("SELECT category_id, category_name FROM categories WHERE user_id = ?", user_id)
+
+#     return render_template('layout.html', items = items, categories = categories)
