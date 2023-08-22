@@ -33,6 +33,8 @@ def after_request(response):
 def index():
     user_id = session.get("user_id")
     rows = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ?", user_id)
+    if not rows:
+            flash("No items!")
     return render_template('index.html', rows = rows)
     
 
@@ -159,7 +161,7 @@ def add_item():
         item_name = request.form.get("item_name")
         item_note = request.form.get("item_note")
         category_name = request.form.get("category_name")
-        rows = db.execute("SELECT category_id FROM categories WHERE category_name = ? ", category_name)
+        rows = db.execute("SELECT category_id FROM categories WHERE category_name = ? AND user_id = ?", category_name, user_id)
         category_id = rows[0]["category_id"]
         db.execute("INSERT INTO items(item_name, item_note, category_id, user_id) VALUES (?, ?, ?, ?)", item_name, item_note, category_id, user_id)
         flash("Item successfully added!")
@@ -180,7 +182,6 @@ def delete_item():
         user_id = session.get("user_id")
         rows = db.execute("SELECT item_id, item_name, item_note FROM items WHERE user_id = ?", user_id)
         if not rows:
-            flash("No items!")
             return redirect("/")
         return render_template("delete_item.html" ,rows = rows)
 
@@ -193,6 +194,8 @@ def categories():
     user_id = session.get("user_id")
     if request.method == "GET":
         rows = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
+        if not rows:
+            flash("No category!")
         return render_template("categories.html", rows = rows)
     
 
@@ -200,18 +203,18 @@ def categories():
 @login_required
 def delete_category():
     user_id = session.get("user_id")
-    rows = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
+    rows = db.execute("SELECT category_name, category_id FROM categories WHERE user_id = ?", user_id)
     if request.method == "GET":
         if len(rows) == 0:
              flash("There are no categories that can be deleted!")
         return render_template("delete_category.html", rows = rows)
     else:
-        category_name = request.form.get("category_name")
-        rows = db.execute("SELECT category_id FROM categories WHERE category_name = ?", category_name)
-        category_id = rows[0]["category_id"]
+        category_id= request.form.get("category_id")
+        print(category_id)
+        # rows = db.execute("SELECT category_id FROM categories WHERE category_name = ?", category_name)
+        # category_id = rows[0]["category_id"]
         # Check if the category has associated items
         items_in_category = db.execute("SELECT COUNT(*) FROM items WHERE user_id = ? AND category_id = ?", user_id, category_id)
-        print(items_in_category)
         num_items = items_in_category[0]["COUNT(*)"]
         print(num_items)
         if num_items > 0:
@@ -219,4 +222,4 @@ def delete_category():
         else:
             db.execute("DELETE FROM categories WHERE user_id = ? AND category_id = ?", user_id, category_id)
             flash("Category deleted!")
-        return redirect("/delete_category")
+            return redirect("/delete_category")
