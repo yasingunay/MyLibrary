@@ -1,6 +1,7 @@
 from flask import redirect, render_template, session
 from functools import wraps
 
+
 # Function to check if user is logged in
 def login_required(f):
     """
@@ -27,3 +28,4 @@ def validate_password(password, min_lenght = 8):
     if len(password) < min_lenght:
         return False
     return True
+

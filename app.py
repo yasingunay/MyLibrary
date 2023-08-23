@@ -6,6 +6,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import login_required, send_message, validate_password
 
 
+
+
 # Create the application instance
 app = Flask(__name__)
 
@@ -36,7 +38,7 @@ def index():
     if request.method == "POST":
         # Get the category name from the form
         category_name = request.form.get("category_name")
-        rows = db.execute("SELECT category_id FROM categories WHERE category_name = ?", category_name)
+        rows = db.execute("SELECT category_id FROM categories WHERE category_name = ? AND user_id = ?", category_name, user_id)
         category_id = rows[0]["category_id"]
 
         # Query database for items and categories in the selected category
@@ -306,5 +308,4 @@ def change_password():
             db.execute("UPDATE users SET hash = ? WHERE user_id = ?", new_password_hash, user_id)
             flash("Password changed!")
             return redirect("/")
-
 
