@@ -1,18 +1,13 @@
 from flask import redirect, render_template, session
 from functools import wraps
 
-
-
-def register_error(message):
-    return render_template("register.html", message = message)
-
-def login_error(message):
-    return render_template("login.html", message = message)
-
+# Function to send message to user
 def send_message(message, page):
+
     return render_template(page, message = message)
 
 
+# Function to check if user is logged in
 def login_required(f):
     """
     Decorate routes to require login.

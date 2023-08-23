@@ -3,7 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import register_error, login_error, login_required, send_message
+from helpers import login_required, send_message
+
 
 # Create the application instance
 app = Flask(__name__)
@@ -17,7 +18,7 @@ Session(app)
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///mylibrary.db")
 
-
+# Ensure templates are auto-reloaded
 @app.after_request
 def after_request(response):
     """Ensure responses aren't cached"""
@@ -33,62 +34,73 @@ def after_request(response):
 def index():
     user_id = session.get("user_id")
     if request.method == "POST":
+        # Get the category name from the form
         category_name = request.form.get("category_name")
         rows = db.execute("SELECT category_id FROM categories WHERE category_name = ?", category_name)
         category_id = rows[0]["category_id"]
+
+        # Query database for items and categories in the selected category
         items = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ? AND category_id = ?", user_id, category_id )
         categories = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
         if not items:
                 flash("Your category is empty!")
         return render_template('index.html', items = items, categories = categories)
     else:
+        # Query database for items and categories
         items = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ?", user_id )
         categories = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
+
+        # Check if there are any items if not show a message
         if not items:
                 flash("No items!")
+        # Render the index.html template with the items and categories
         return render_template('index.html', items = items, categories = categories)
+       
 
-@app.route('/register', methods=['GET', 'POST'])
+# Create a URL route in our application for "/register"
+@app.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == "GET":
         return render_template('register.html')
     else:
         # Get data from register from
-        username = request.form.get("username")
+        username = request.form.get("username").lower() # Convert username to lowercase
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
 
-        existing_user = db.execute("SELECT username FROM users WHERE username = ?", username)
+        # Check if username is already taken
+        existing_user = db.execute("SELECT username FROM users WHERE LOWER (username) = ?", username) # Convert username to lowercase
 
-        # Check errors
-        if username == "" or existing_user:
-            return register_error("Username is not avaiable!")
-        elif password == "":
-            return register_error("Missing password!")
-        elif confirmation == "" or (password != confirmation):
-            return register_error("Passwords don't match!")
-        
-
-        # Generate a hasf of the password
-        password_hash = generate_password_hash(
-            password, method="pbkdf2", salt_length=16
-        )
-
-        # Add user to database
-        result = db.execute("INSERT INTO users(username, hash) VALUES(?,?)", username, password_hash)
-    
-        if result:
-            # Log the user in
-            user_data = db.execute("SELECT user_id FROM users WHERE username = ?", username)
-            if user_data:
-                user_id = user_data[0]["user_id"]
-                session["user_id"] = user_id
-
-                # Redirect to the index page
-                return redirect("/")
-
+        # Check if username, password and confirmation are valid
+        if not username or existing_user:
+            return send_message("Username is not avaiable!", "register.html")
+        elif not password:
+            return send_message("Missing password!", "register.html")
+        elif not confirmation or password != confirmation:
+            return send_message("Passwords don't match!", "register.html")
         else:
-            register_error("Registration failed!")
+            # Generate a hasf of the password
+            password_hash = generate_password_hash(
+                password, method="pbkdf2", salt_length=16
+            )
+
+            # Add user to database
+            result = db.execute("INSERT INTO users(username, hash) VALUES(?,?)", username, password_hash)
+        
+            # Check if the user was added to the database
+            if result:
+                # Log the user in
+                user_data = db.execute("SELECT user_id FROM users WHERE username = ?", username)
+                if user_data:
+                    user_id = user_data[0]["user_id"]
+                    session["user_id"] = user_id
+                    return redirect("/")
+                else:
+                    return send_message("Error logging in!", "register.html")
+            else:
+                return send_message("Error registering user!", "register.html")
+            
+        
     
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -104,11 +116,12 @@ def login():
     if request.method == "POST":
         # Ensure username was submitted
         if not username:
-            return login_error("Please enter a username")
+            return send_message("Please enter a username", "login.html")
+        
         # Ensure password was submitted
         elif not password:
-            return login_error("Please enter a password")
-        
+            return send_message("Please enter a password", "login.html")
+            
         # Query database for user
         rows = db.execute("SELECT * FROM users WHERE username is ?", username)
         if len(rows) == 1:
@@ -116,7 +129,8 @@ def login():
             user_id = rows[0]["user_id"]
 
         elif len(rows) != 1 or not check_password_hash(password_hash,password):
-            return login_error("Invalid username and/or password")
+            return send_message("Invalid username and/or password", "login.html")
+            
         
         # Remember which user has logged in
         session["user_id"] = user_id
@@ -145,9 +159,11 @@ def add_category():
         return render_template("add_category.html")
     else:
         category_name = request.form.get("category_name")
+        # Check if category name is valid
         if category_name == "":
             return send_message("Enter a category name!", "add_category.html")
         else:
+            # Check if category already exists
             user_id = session.get("user_id")
             rows = db.execute("SELECT category_name FROM categories WHERE LOWER(category_name) = ? AND user_id = ?", category_name.lower(), user_id)
             if not rows:
@@ -155,6 +171,7 @@ def add_category():
                 flash("Category successfully added!")     
                 return redirect("/categories")
             else:
+                # If category already exists show a message
                 return send_message("Category already exists!", "add_category.html")
             
 
@@ -165,16 +182,26 @@ def add_category():
 def add_item():
     user_id = session.get("user_id")
     if request.method == "GET":
+        # Query database for categories
         categories = db.execute("SELECT category_name FROM categories WHERE user_id = ? ", user_id)
         return render_template("add_item.html", categories = categories)
     else:
+        # Get data from form
         item_name = request.form.get("item_name")
         item_note = request.form.get("item_note")
         category_name = request.form.get("category_name")
+
+        # Query database for category_id
         rows = db.execute("SELECT category_id FROM categories WHERE category_name = ? AND user_id = ?", category_name, user_id)
         category_id = rows[0]["category_id"]
+
+        # Add item to database
         db.execute("INSERT INTO items(item_name, item_note, category_id, user_id) VALUES (?, ?, ?, ?)", item_name, item_note, category_id, user_id)
+
+        # Show a message if item was added
         flash("Item successfully added!")
+
+        # Redirect to the index page
         return redirect(url_for("index")) 
     
 
@@ -189,10 +216,15 @@ def delete_item():
         flash("Item deleted!")
         return redirect("/delete_item")
     else:
+        # Query database for items
         user_id = session.get("user_id")
         rows = db.execute("SELECT item_id, item_name, item_note FROM items WHERE user_id = ?", user_id)
+
+        # Check if there are any items
         if not rows:
             return redirect("/")
+        
+        # Render the delete_item.html template with the items
         return render_template("delete_item.html" ,rows = rows)
 
     
@@ -203,6 +235,7 @@ def delete_item():
 def categories():
     user_id = session.get("user_id")
     if request.method == "GET":
+        # Query database for categories
         rows = db.execute("SELECT category_name FROM categories WHERE user_id = ?", user_id)
         if not rows:
             flash("You have no categories!")
@@ -213,18 +246,21 @@ def categories():
 @login_required
 def delete_category():
     user_id = session.get("user_id")
+    # Query database for categories
     rows = db.execute("SELECT category_name, category_id FROM categories WHERE user_id = ?", user_id)
     if request.method == "GET":
+        # Check if there are any categories if not show a message
         if len(rows) == 0:
              flash("There are no categories that can be deleted!")
         return render_template("delete_category.html", rows = rows)
-    else:
+    else: 
         category_id= request.form.get("category_id")
-        # rows = db.execute("SELECT category_id FROM categories WHERE category_name = ?", category_name)
-        # category_id = rows[0]["category_id"]
-        # Check if the category has associated items
+
+        # Check if category contains items
         items_in_category = db.execute("SELECT COUNT(*) FROM items WHERE user_id = ? AND category_id = ?", user_id, category_id)
         num_items = items_in_category[0]["COUNT(*)"]
+
+        # Delete category if it doesn't contain any items
         if num_items > 0:
             flash("Cannot delete the category. It contains items.")
         else:
@@ -232,15 +268,3 @@ def delete_category():
             flash("Category deleted!")
         return redirect("/delete_category")
         
-
-
-
-# @app.route('/books', methods=['GET', 'POST'])
-# @login_required
-# def Books():
-#     user_id = session.get("user_id")
-#     category_id = request.form.get("category_id")
-#     items = db.execute("SELECT item_name, item_note FROM items WHERE user_id = ?", user_id)
-#     rows = db.execute("SELECT category_id, category_name FROM categories WHERE user_id = ?", user_id)
-
-#     return render_template('layout.html', items = items, categories = categories)
