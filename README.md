@@ -51,4 +51,4 @@ When designing the MyLibrary, mostly I've used CS50 Finance design.
 ## Conclusion
 MyLibrary is a comprehensive Flask web application designed to help users organize and manage their personal libraries. Its user-friendly interface, secure authentication, and efficient database design make it a valuable tool for anyone looking to keep track of their items. Whether you're managing a collection of books, movies, or anything else, this application is here to assist you. Enjoy using it and feel free to contribute to its improvement!
 
-![50!](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*IYCifTCCR2ah-79u94Z3wg.png)
+![50!](https://miro.medium.com/v2/resize:fit:1400/1*eD8btFfojRagaSs7awJsaA.png)
