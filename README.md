@@ -1,7 +1,4 @@
-# MyLibrary
-CS50 Final Project
-
-# MyLibrary
+# MyLibrary - CS50 Final Project
 #### Video Demo:  <https://youtu.be/nNyIe7emT2M>
 #### Description:
 This is a Flask web application that serves as a simple personal library management system. 
