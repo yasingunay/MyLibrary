@@ -9,9 +9,14 @@ It allows users to
 * add items to those categories 
 * view items and categories 
 * delete items and categories 
-* change their password, and 
+* change their password
 
 The application is structured to manage a user's personal library inventory.
+
+## Requirements 
+* Flask
+* Flask-Session
+* cs50
 
 ## Useful Sources
 * https://flask.palletsprojects.com/en/2.3.x/debugging/
@@ -20,9 +25,6 @@ The application is structured to manage a user's personal library inventory.
 
 # Tips
 Use flask in debuggin mod (flask --app app run --debug)
-
-
-
 
 
 # Database Structure
