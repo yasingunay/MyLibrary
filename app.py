@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import login_required, send_message
+from helpers import login_required, send_message, validate_password
 
 
 # Create the application instance
@@ -76,6 +76,8 @@ def register():
             return send_message("Username is not avaiable!", "register.html")
         elif not password:
             return send_message("Missing password!", "register.html")
+        elif validate_password(password) == False:
+            return send_message("Password must be at least 8 characters long!", "register.html")
         elif not confirmation or password != confirmation:
             return send_message("Passwords don't match!", "register.html")
         else:
@@ -268,3 +270,41 @@ def delete_category():
             flash("Category deleted!")
         return redirect("/delete_category")
         
+
+
+@app.route("/change_password", methods = ["GET", "POST"])
+@login_required
+def change_password():
+    user_id = session.get("user_id")
+    if request.method == "GET":
+        return render_template("change_password.html")
+    else:
+        old_password = request.form.get("old_password")
+        new_password = request.form.get("new_password")
+        confirmation = request.form.get("confirmation")
+
+        # Query database for user
+        rows = db.execute("SELECT hash FROM users WHERE user_id = ?", user_id)
+        password_hash = rows[0]["hash"]
+
+        # Check if old password is valid
+        if not check_password_hash(password_hash, old_password):
+            return send_message("Invalid password!", "change_password.html")
+        
+        # Check if new password and confirmation are valid
+        elif not validate_password(new_password):
+            return send_message("Password must be at least 8 characters long!", "change_password.html")
+        elif new_password != confirmation:
+            return send_message("Passwords don't match!", "change_password.html")
+        else:
+            # Generate a hash of the new password
+            new_password_hash = generate_password_hash(
+                new_password, method="pbkdf2", salt_length=16
+            )
+
+            # Update password
+            db.execute("UPDATE users SET hash = ? WHERE user_id = ?", new_password_hash, user_id)
+            flash("Password changed!")
+            return redirect("/")
+
+

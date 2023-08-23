@@ -1,12 +1,6 @@
 from flask import redirect, render_template, session
 from functools import wraps
 
-# Function to send message to user
-def send_message(message, page):
-
-    return render_template(page, message = message)
-
-
 # Function to check if user is logged in
 def login_required(f):
     """
@@ -22,3 +16,14 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+# Function to send message to user
+def send_message(message, page):
+    return render_template(page, message = message)
+
+# Function to validate password
+def validate_password(password, min_lenght = 8):
+    if len(password) < min_lenght:
+        return False
+    return True
