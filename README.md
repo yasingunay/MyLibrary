@@ -19,9 +19,9 @@ The application is structured to manage a user's personal library inventory.
 * cs50
 
 ## Useful Sources
-* https://flask.palletsprojects.com/en/2.3.x/debugging/
-* https://getbootstrap.com/docs/4.0/components/buttons/
-* https://favicon.io/
+* [The Built-In Debugger](https://flask.palletsprojects.com/en/2.3.x/debugging/)
+* [Bootstrap - Buttons](https://getbootstrap.com/docs/4.0/components/buttons/)
+* [Favicon Generators](https://favicon.io/)
 
 # Tips
 Use flask in debuggin mod (flask --app app run --debug)
