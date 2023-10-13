@@ -3,6 +3,9 @@
 
 Welcome to the MyLibrary as a Library Management System! This web application is designed to help you organize and manage your personal library of items. Whether it's books, movies, or any other items you want to keep track of, this application has you covered. Let's take a detailed look at what this project is all about and how it works.
 
+## Screenshots
+![mylibrary](mylibrary.png)
+
 ## Project Overview
 MyLibrary is a Flask-based web application that provides users with the ability to register, log in, organize items into categories, and perform various library management tasks. It is built using Flask, SQL, and other related libraries. The main functionalities include:
 
