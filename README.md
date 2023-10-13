@@ -1,5 +1,5 @@
 # MyLibrary - CS50 Final Project
-#### VİDEO DEMO  <https://youtu.be/nNyIe7emT2M>
+#### [VİDEO DEMO](https://youtu.be/nNyIe7emT2M)
 
 Welcome to the MyLibrary as a Library Management System! This web application is designed to help you organize and manage your personal library of items. Whether it's books, movies, or any other items you want to keep track of, this application has you covered. Let's take a detailed look at what this project is all about and how it works.
 
